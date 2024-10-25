@@ -1,5 +1,7 @@
 import Response from "@/lib/api.response";
 import { prisma } from "@/lib/prisma";
+import { User } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +13,17 @@ export async function POST(req: Request) {
       },
     });
 
-    const data = user;
+    if (!user || !bcrypt.compare(payload.password, user.password)) {
+      return Response({
+        message: "Incorrect email or password",
+        status: 404,
+      });
+    }
+
+    const data: Partial<User> = {
+      ...user,
+      password: undefined,
+    };
 
     return Response({
       message: "Sign in successfully",
